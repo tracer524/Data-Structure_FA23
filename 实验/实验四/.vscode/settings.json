@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "__split_buffer": "cpp",
+        "array": "cpp",
+        "vector": "cpp"
+    }
+}

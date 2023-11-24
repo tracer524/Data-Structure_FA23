@@ -66,7 +66,34 @@ int main(){
         cout << data << endl;
         ClearStack(S);
         for(j=0; data[j] != '@'; j++){
-            if(data[j] == '(' || data[j] == '[' || data[j] == '{'){
+            if(data[j] == '('){
+                if(!StackEmpty(S)){
+                    GetTop(S, top);
+                    if(top == '{'){
+                        check = 0;
+                        break;
+                    }
+                }
+                Push(S, data[j]);
+            }
+            else if(data[j] == '['){
+                if(!StackEmpty(S)){
+                    GetTop(S, top);
+                    if(top == '('){
+                        check = 0;
+                        break;
+                    }
+                }
+                Push(S, data[j]);
+            }
+            else if(data[j] == '{'){
+                if(!StackEmpty(S)){
+                    GetTop(S, top);
+                    if(top != '{'){
+                        check = 0;
+                        break;
+                    }
+                }
                 Push(S, data[j]);
             }
             else if(data[j] == ')'){
