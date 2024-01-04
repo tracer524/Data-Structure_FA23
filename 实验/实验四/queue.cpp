@@ -1,4 +1,7 @@
-#include "queue.h"
+#include "Queue.hpp"
+#include <iostream>
+
+using namespace std;
 
 Status Queue::InitQueue(){
     // 构造一个空队列 Q

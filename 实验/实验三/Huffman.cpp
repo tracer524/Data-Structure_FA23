@@ -24,10 +24,13 @@ int ReadFile(char *filename, char *chars);
     // 从文件中逐个字节读取信息
 
 int GetFrequency(char *chars, int *freq, char *charList, int &n);
+    // 获取待处理文本字符的频率信息
 
 void WriteCodedString(char *CodedChar, char *chars, HuffmanCode HC, char *CharList, int FLength, int CharNum);
+    // 将比特流写入文件
 
 void Decode(char *CodedChar, HuffmanCode HC, char *CharList, char *DecodedChar);
+    // 根据比特流还原文件
 
 int main(){
     int i;
@@ -37,7 +40,7 @@ int main(){
     filename = "2_2.txt";
     char *chars = new char[MAX_FILE_LENGTH];
     int FileLength = ReadFile(filename, chars);
-    cout << "原始字符" << endl;
+    cout << "原始字符" << endl;%
     for(i = 1; i <= FileLength; i++){
         cout << chars[i];
     }

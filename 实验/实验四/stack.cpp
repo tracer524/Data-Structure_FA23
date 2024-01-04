@@ -1,4 +1,7 @@
-#include "stack.h"
+#include "Stack.hpp"
+#include <iostream>
+
+using namespace std;
 
 Status Stack::InitStack(){
     // 构造一个空栈S

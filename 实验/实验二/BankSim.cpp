@@ -66,10 +66,14 @@ class Bank
         int open;
         int avgWaitTime;
         LinkQueue Queue1, Queue2;
-        Status deal(LinkQueue& queue, Customer &customer);    // 处理queue中一位客户customer的业务
-        void checkQueue1();                                 // 对Queue1进行一次处理
-        void checkQueue2(int benchmark);                    // 对Queue2进行检查
-        void close();                                       // 下班吃饭，全部滚蛋
+        Status deal(LinkQueue& queue, Customer &customer);    
+            // 处理queue中一位客户customer的业务
+        void checkQueue1();                                 
+            // 对Queue1进行一次处理
+        void checkQueue2(int benchmark);                    
+            // 对Queue2进行检查
+        void close();                                       
+            // 结束业务
 };
 
 Status Bank::deal(LinkQueue &queue, Customer &customer){

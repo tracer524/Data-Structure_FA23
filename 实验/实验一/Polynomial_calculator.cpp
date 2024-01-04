@@ -8,7 +8,6 @@
 
 #include <iostream>
 #include <cmath>
-
 using namespace std;
 
 typedef int Status;

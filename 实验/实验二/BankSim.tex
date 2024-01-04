@@ -1,0 +1,191 @@
+\documentclass[UTF8]{ctexart}
+\usepackage[a4paper,left=3cm,right=3cm,top=2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{frame=tb,
+  language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,%设置行号位置none不显示行号
+  numberstyle=\tiny\courier, %设置行号大小
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  keywordstyle=[2]\color{purple},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  escapeinside=`,%逃逸字符(1左面的键)，用于显示中文例如在代码中`中文...`
+  tabsize=4,
+  extendedchars=false %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+}
+
+\iffalse
+1.问题的描述
+	对要解决的问题（设计目标）的详细描述，输入的数据和输出的结果。
+2.算法的描述
+(1)数据结构的描述
+    逻辑结构和存储结构（存储类型定义、对主要变量和数组的说明）。
+(2)程序结构的描述
+	函数原型、功能和接口的描述。
+3.调试分析
+	测试数据的选择，程序调试中遇到的问题及解决方法。
+4.算法的时空分析
+5.测试结果及分析
+	列出测试数据和测试结果，给出分析和说明。
+6.实验体会和收获
+\fi
+
+\setlength\lineskiplimit{5.25bp}
+\setlength\lineskip{5.25bp}
+
+\title{实验二\ 栈与队列的应用——银行业务模拟}
+\author{崔士强 PB22151743}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{问题描述}
+\subsection{设计目标}
+客户业务分为两种：
+\begin{enumerate}
+  \item 申请从银行得到一笔资金，即取款或借款
+  \item 向银行投入一笔资金，即存款或还款
+\end{enumerate}
+
+银行有两个服务窗口，相应地有两个队列。客户到达银行后先排第一个队，
+处理每个客户业务时，如果属于第一种，且申请额超出银行现存资金总额而得不
+到满足，则立刻排入第二个队等候直至满足时才离开银行;否则业务处理完后立
+刻离开银行,每接待完一个第二种业务的客户，则顺序检查和处理(如果可能)第
+二个队列中的客户，对能满足的申请者予以满足,不能满足者重新排到第二个队
+列的队尾。注意，在此检查过程中，一旦银行资金总额少于或等于刚才第一个队
+列中最后一个客户(第二种业务)被接待之前的数额，或者本次已将第二个队列
+检查或处理了一遍，就停止检查(因为此时已不可能还有能满足者)转而继续接
+待第一个队列的客户。任何时刻都只开一个窗口。假设检查不需要时间，营业时
+间结束时所有客户立即离开银行。
+
+本程序通过模拟方法求出客户在银行内逗留的平均时间
+\subsection{输入输出}
+第一行输入四个数 \lstinline{N}、\lstinline{total}、
+\lstinline{close_time}、\lstinline{average_time}，分别表示来银
+行的总人数、银行开始营业时拥有的款额、今天预计的营业时长和客户交易时长
+之后的 N 行每行输入两个数 \lstinline{a}、\lstinline{b}，
+第一个数 \lstinline{a} 为客户办理的款额，
+用负值和正值分别表示第一类和第二类业务。
+第二个数 \lstinline{b} 为客户来到银行的时间
+\section{算法描述}
+\subsection{数据结构描述}
+本程序设置两个类\lstinline{Customer}和\lstinline{Bank}，用队列处理顾客相关状态：
+\begin{lstlisting}
+  typedef Customer QElemType;
+
+  typedef int Status;
+  
+  typedef struct QNode{
+      QElemType       data;
+      struct QNode    *next;
+  }QNode, *QueuePtr;
+\end{lstlisting}
+\subsection{程序结构描述}
+程序中用到的两个类的声明如下所示：
+\begin{lstlisting}
+  class Customer
+  {
+      public:
+          int money;
+          int arrivalTime;
+          int waitTime;
+          int leaveTime;
+          int order;
+  };
+  class Bank
+  {
+      public:
+          int money;
+          int closeTime;
+          int serviceTime;
+          int waitTimeList[100];
+          int pNumber;
+          int clock;
+          int open;
+          int avgWaitTime;
+          LinkQueue Queue1, Queue2;
+          Status deal(LinkQueue& queue, Customer &customer);    
+              // 处理queue中一位客户customer的业务
+          void checkQueue1();                                 
+              // 对Queue1进行一次处理
+          void checkQueue2(int benchmark);                    
+              // 对Queue2进行检查
+          void close();                                       
+              // 结束业务
+  };
+\end{lstlisting}
+
+\section{调试分析}
+\subsection{测试数据}
+测试过程中选取会导致银行持有资金无法满足需求的测试样例，以此测试第二个队列处理的正确性。
+另外选取时间累积超过营业时间的样例以测试结束业务的过程是否正确执行。
+
+\section{算法的时空分析}
+\begin{enumerate}
+  \item 初始化和输入操作：初始化银行和顾客的操作是常数时间操作 $O(1)$。
+  然后，根据银行的顾客人数 $N_p$ 读取顾客信息，这部分的时间复杂度是 $O(N_p)$.
+  \item 主循环：\lstinline{while(bank.clock < bank.closeTime)}循环的次数取决于银行的关闭时间、顾客的到达时间以及服务时间。
+  在这个循环中，有几个关键操作：
+ 
+  \lstinline{EnQueue(bank.Queue1, customer[i])}：队列的入队操作是常数时间 $O(1)$。
+
+  \lstinline{bank.checkQueue1()}：这个方法可能调用 \lstinline{checkQueue2}。
+  \lstinline{checkQueue2} 的时间复杂度是 $O(n)$，其中 $n$ 是队列 \lstinline{Queue2} 的长度。
+  因此，\lstinline{checkQueue1} 的时间复杂度也可能受到 \lstinline{Queue2} 长度的影响。
+  \item 输出和平均等待时间计算：输出每个顾客的等待时间并计算平均等待时间的循环时间复杂度是 $O(N_p)$。
+\end{enumerate}
+考虑以上各点，\lstinline{main} 函数的总体时间复杂度依赖于几个关键因素：顾客的数量 $N_p$
+和队列 \lstinline{Queue2} 的最大长度。假设 \lstinline{Queue2} 的最大长度为 $m$，
+则 \lstinline{checkQueue1} 在最坏情况下的时间复杂度是 $O(m)$。
+由于 \lstinline{checkQueue1} 在主循环中被调用，因此 \lstinline{main} 函数的总体时间复杂度为 $O(N_p \times m)$.
+\section{测试结果及分析}
+测试数据如下所示：
+\begin{lstlisting}
+  4 10000 600 10 
+  -2000 0 
+  1000 10 
+  -10000 30 
+  2000 50
+\end{lstlisting}
+输出结果：
+\begin{lstlisting}
+  0
+  0
+  30
+  0
+  7
+\end{lstlisting}
+符合预期.
+\section{实验体会和收获}
+通过本实验，熟悉了关于队列的结构、操作、算法以及适用场景.
+
+\end{document}
+\iffalse
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{name.png}
+    \caption{name}
+\end{figure}
+\fi

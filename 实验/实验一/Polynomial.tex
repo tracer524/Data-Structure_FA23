@@ -1,0 +1,163 @@
+\documentclass[UTF8]{ctexart}
+\usepackage[a4paper,left=3cm,right=3cm,top=2cm]{geometry}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{frame=tb,
+  language=C++,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,%设置行号位置none不显示行号
+  numberstyle=\tiny\courier, %设置行号大小
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  keywordstyle=[2]\color{purple},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  escapeinside=`,%逃逸字符(1左面的键)，用于显示中文例如在代码中`中文...`
+  tabsize=4,
+  extendedchars=false %解决代码跨页时，章节标题，页眉等汉字不显示的问题
+}
+
+\iffalse
+1.问题的描述
+	对要解决的问题（设计目标）的详细描述，输入的数据和输出的结果。
+2.算法的描述
+(1)数据结构的描述
+    逻辑结构和存储结构（存储类型定义、对主要变量和数组的说明）。
+(2)程序结构的描述
+	函数原型、功能和接口的描述。
+3.调试分析
+	测试数据的选择，程序调试中遇到的问题及解决方法。
+4.算法的时空分析
+5.测试结果及分析
+	列出测试数据和测试结果，给出分析和说明。
+6.实验体会和收获
+\fi
+
+\setlength\lineskiplimit{5.25bp}
+\setlength\lineskip{5.25bp}
+
+\title{实验一\ 线性表的应用：稀疏一元多项式运算器}
+\author{崔士强 PB22151743}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{问题描述}
+\subsection{设计目标}
+本实验的设计目标是创建一个稀疏一元多项式运算器。
+这个运算器需要实现对稀疏一元多项式的基本操作，包括创建、输出、求和、求差、求值、销毁、清空和修改多项式，
+另外实现多项式的微分，定积分，不定积分功能。
+\subsection{输入及输出}
+每次输入多项式时，逐个输入各项的系数以及指数，程序将这些项按升序排列。经过运算后的多项式
+按要求存放在列表中，通过函数\lstinline|void PrintPolyn(Polynomial P)| 输出到屏幕上
+\section{算法描述}
+\subsection{数据结构描述}
+本程序使用链表存储多项式，用一个数组存放所有多项式：
+\begin{lstlisting}
+typedef struct term{            // 多项式的项
+    float   coef;                 // 系数
+    int     exp;                  // 指数
+}term, ElemType;
+
+typedef struct LNode{           // 结点类型
+    ElemType        data;
+    struct LNode    *next;
+}*Link, *Position;
+
+typedef  struct LinkList{       // 链表类型
+    Link    head, tail;           // 分别指向线性链表的头结点和最后一个结点
+    int     len;                  // 指示线性链表中数据元素的个数
+}LinkList;
+
+typedef  LinkList polynomial;   //用带表头结点的有序链表表示多项式
+\end{lstlisting}
+
+\subsection{程序结构描述}
+函数原型及功能说明如下：
+\begin{lstlisting}
+void CreatePolyn(polynomial &P, int m );
+  //  输入m项的系数和指数，建立表示一元多项式的有序链表P
+void DestroyPolyn(polynomial &P);
+  //  销毁一元多项式P
+void PrintPolyn(polynomial P);
+  //  打印输出一元多项式P
+void ClearPolyn(polynomial p);
+  //  将一元多项式P置空
+int PolynLength(polynomial P);
+  //  返回一元多项式P中的项数
+void AddPolyn(polynomial &Pa, polynomial &Pb);
+  //  完成多项式相加运算，即: Pa=Pa+Pb, 并销毁一元多项式Pb
+void SubstractPolyn(polynomial &Pa, polynomial &Pb);
+  //  完成多项式相减运算，即: Pa=Pa-Pb, 并销毁一元多项式Pb
+float EvaluatePolyn(polynomial P, float f);
+  //  算出一元多项式P(x)在x=f处的值
+void DiffPolyn(polynomial &P);
+  //  求一元多项式P的1阶导数
+void Integral(polynomial &p);
+  //  求一元多项式P的不定积分
+void IntPrintPolyn(polynomial P);
+  //  打印输出P的不定积分
+float IntEvalPolyn(polynomial P, float f);
+  //  算出一元多项式P的不定积分在x=f处的值
+float DefIntegral(polynomial P, float a, float b);
+  //  求一元多项式P在[a, b]上的定积分
+\end{lstlisting}
+\section{调试分析}
+\subsection{测试数据}
+选择含正、负、零次项的多项式进行测试，以保证正确性
+\subsection{问题及解决方法}
+在测试过程中发现对于$-1$次项的积分，由于其原函数为对数形式，需要单独处理.
+
+解决方法：输出不定积分时，对每一项判断是否是零次项，如果某一项是零次项则输出对数形式。求定积分时同理.
+\section{算法的时空分析}
+各项功能的时间复杂度如下所示：
+\begin{table}[H]
+  \centering
+  \begin{tabular}{cccccc}
+    \hline\hline
+    操作 & 相加/相减 & 求值 & 微分 & 不定积分 & 定积分 \\
+    \hline
+    时间复杂度 & $O(N+M)$ & $O(N)$ & $O(N)$ & $O(N)$ & $O(N)$ \\
+    \hline
+  \end{tabular}
+\end{table}
+\section{测试结果及分析}
+\[P(x) = x^{-1} + 1 + x+2x^2+3x^3+4x^4+5x^5\]
+\[Q(x) = 5x+4x^2\] 
+对两个多项式执行以下操作（每次操作后复原）：
+\begin{enumerate}
+  \item $P(x)+Q(x)$，并输出序号为1的多项式
+  \item $P(x)-Q(x)$，并输出序号为1的多项式
+  \item 计算$P(x)$在$x=4$处的值
+  \item 计算$P(x)$的3阶导数
+  \item 计算$P(x)$的不定积分，并求其在$x=1$处的值
+  \item 计算$P(x)$从$-1$到$4$的定积分
+  \item 将$P(x)$置空，并输出序号为1的多项式
+  \item 将$P(x)$销毁，并输出序号为1的多项式
+\end{enumerate}
+程序输出的结果均符合预期.
+\section{实验体会和收获}
+在编写链表相关的函数并进行运用的过程中熟练掌握了链表的相关结构及算法，
+在编写多项式相关操作算法的过程中
+增强了对指针操作的把握程度。
+\end{document}
+
