@@ -1,3 +1,3 @@
 # Data-Structure-FA23
 
-Include homework, slides and labs in the course.
+由于不允许外传，不包含Slides.
